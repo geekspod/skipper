@@ -43,7 +43,7 @@ def main(_argv):
     max_cosine_distance = 0.4
     nn_budget = None
     nms_max_overlap = 1.0
-    
+
     # initialize deep sort
     model_filename = 'model_data/mars-small128.pb'
     encoder = gdet.create_box_encoder(model_filename, batch_size=1)
@@ -91,6 +91,8 @@ def main(_argv):
         out = cv2.VideoWriter(FLAGS.output, codec, fps, (width, height))
 
     frame_num = 0
+    tracking_id = 0
+    isTrackerInit = True
     # while video is running
     while True:
         return_value, frame = vid.read()
@@ -157,10 +159,10 @@ def main(_argv):
         class_names = utils.read_class_names(cfg.YOLO.CLASSES)
 
         # by default allow all classes in .names file
-        allowed_classes = list(class_names.values())
-        
+        # allowed_classes = list(class_names.values())
+
         # custom allowed classes (uncomment line below to customize tracker for only people)
-        #allowed_classes = ['person']
+        allowed_classes = ['person']
 
         # loop through objects and use class index to get class name, allow only classes in allowed_classes list
         names = []
@@ -194,7 +196,7 @@ def main(_argv):
         scores = np.array([d.confidence for d in detections])
         classes = np.array([d.class_name for d in detections])
         indices = preprocessing.non_max_suppression(boxs, classes, nms_max_overlap, scores)
-        detections = [detections[i] for i in indices]       
+        detections = [detections[i] for i in indices]
 
         # Call the tracker
         tracker.predict()
@@ -203,16 +205,40 @@ def main(_argv):
         # update tracks
         for track in tracker.tracks:
             if not track.is_confirmed() or track.time_since_update > 1:
-                continue 
+                continue
             bbox = track.to_tlbr()
             class_name = track.get_class()
-            
+
         # draw bbox on screen
             color = colors[int(track.track_id) % len(colors)]
             color = [i * 255 for i in color]
             cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), color, 2)
-            cv2.rectangle(frame, (int(bbox[0]), int(bbox[1]-30)), (int(bbox[0])+(len(class_name)+len(str(track.track_id)))*17, int(bbox[1])), color, -1)
-            cv2.putText(frame, class_name + "-" + str(track.track_id),(int(bbox[0]), int(bbox[1]-10)),0, 0.75, (255,255,255),2)
+            cv2.rectangle(frame, (int(bbox[0]), int(bbox[1] - 30)),
+                          (int(bbox[0]) + (len(class_name) + len(str(track.track_id))) * 17, int(bbox[1])), color, -1)
+            cv2.putText(frame, class_name + "-" + str(track.track_id), (int(bbox[0]), int(bbox[1] - 10)), 0, 0.75,
+                        (255, 255, 255), 2)
+            height, width, colorChannel = frame.shape
+            middle_circle = (int(width / 2), int(height / 2))
+            image = cv2.circle(frame, middle_circle, 150, (0, 255, 0), thickness=5)
+            print("middle circle: ", middle_circle[0], middle_circle[1])
+            print("track: ", bbox[0], bbox[1], bbox[2], bbox[3])
+            if bbox[0] < middle_circle[0] < bbox[2] and bbox[1] < middle_circle[1] < bbox[3] and isTrackerInit:
+                tracking_id = track.track_id
+                isTrackerInit = False
+            if track.track_id == tracking_id:
+                if bbox[2] < middle_circle[0] - 50:
+                    print("Object in left circle")
+                    cv2.putText(frame, "Object in left circle", (int(bbox[0]), int(bbox[3] + 20)),
+                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
+                elif bbox[0] > middle_circle[0] + 50:
+                    print("Object in right circle")
+                    cv2.putText(frame, "Object in right circle", (int(bbox[0]), int(bbox[3] + 20)),
+                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
+                elif middle_circle[0] - 50 < bbox[0] < middle_circle[0] + 50:
+                    print("In Middle circle",track.track_id)
+                    print("Object in middle circle")
+                    cv2.putText(frame, "Object in middle circle", (int(bbox[0]), int(bbox[3] + 20)),
+                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
 
         # if enable info flag then print details about each track
             if FLAGS.info:
@@ -223,10 +249,10 @@ def main(_argv):
         print("FPS: %.2f" % fps)
         result = np.asarray(frame)
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        
+
         if not FLAGS.dont_show:
             cv2.imshow("Output Video", result)
-        
+
         # if output flag is set, save video file
         if FLAGS.output:
             out.write(result)
