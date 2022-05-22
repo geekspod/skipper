@@ -30,7 +30,7 @@ class ObjectTracker:
             tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
         # initialize deep sort
-        self.model_filename = 'model_data/mars-small128.pb'
+        self.model_filename = 'D:\yolov4-deepsort\model_data\mars-small128.pb'
         self.encoder = gdet.create_box_encoder(self.model_filename, batch_size=1)
         # calculate cosine distance metric
         metric = nn_matching.NearestNeighborDistanceMetric("cosine", self.max_cosine_distance, self.nn_budget)
@@ -43,7 +43,7 @@ class ObjectTracker:
         session = InteractiveSession(config=config)
         STRIDES, ANCHORS, NUM_CLASS, XYSCALE = utils.load_config()
 
-        self.model = tf.saved_model.load('./checkpoints/yolov4-416', tags=[tag_constants.SERVING])
+        self.model = tf.saved_model.load('D:\yolov4-deepsort\checkpoints\yolov4-416', tags=[tag_constants.SERVING])
 
         self.out = None
 
@@ -51,8 +51,10 @@ class ObjectTracker:
 
         self.tracking_id = 0
         self.isTrackerInit = True
+        self.trackerList = []
 
     def track(self, frame):
+        print("tracking")
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(frame)
         frame_size = frame.shape[:2]
@@ -183,8 +185,11 @@ class ObjectTracker:
         print("FPS: %.2f" % fps)
         result = np.asarray(frame)
         self.out = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+        temp = []
+        for track in self.tracker.tracks:
+             temp.append(track.track_id)
 
-        return {'output': self.out, 'command': self.command}
+        return {'output': self.out, 'command': self.command,"tracks":temp}
 
 
 if __name__ == '__main__':
