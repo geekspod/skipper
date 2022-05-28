@@ -84,6 +84,9 @@ def send_list(message):
         socketio.emit('list', message)
 
 
-
-
+@socketio.on('track_id')
+def recv_list(track_id):
+    print("Received track {0}".format(track_id))
+    global object
+    object.tracking_id = track_id
 
