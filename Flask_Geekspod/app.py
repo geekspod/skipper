@@ -1,5 +1,8 @@
-import flask_socketio
-from flask import Flask, render_template
+import pickle
+import socket
+import struct
+import sys
+
 import cv2
 from flask import Flask, render_template
 from flask import Response,jsonify
