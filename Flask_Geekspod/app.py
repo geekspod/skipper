@@ -27,7 +27,6 @@ sys.path.insert(0, 'D:\yolov4-deepsort')
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 video = cv2.VideoCapture(0)
-
 old_list = []
 object = ObjectTracker()
 
@@ -67,14 +66,16 @@ def gen(camera):
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + outputImage + b'\r\n')
 
+
 @app.route('/video_feed')
 def video_feed():
     global video
-    return Response(gen(video),mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen(video), mimetype='multipart/x-mixed-replace; boundary=frame')
+
 
 @socketio.on('connect')
 def test_connect():
-    emit('after connect',  {'data':'Lets dance'})
+    emit('after connect', {'data': 'Lets dance'})
 
 
 def send_list(message):
