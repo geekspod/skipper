@@ -29,9 +29,31 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 video = cv2.VideoCapture(0)
 
 old_list = []
+object = ObjectTracker()
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+def video_socket():
+    global data, payload_size
+    # Retrieve message size
+    while len(data) < payload_size:
+        data += conn.recv(4096)
+    packed_msg_size = data[:payload_size]
+    data = data[payload_size:]
+    msg_size = struct.unpack("L", packed_msg_size)[0]  ### CHANGED
+    # Retrieve all data based on message size
+    while len(data) < msg_size:
+        data += conn.recv(4096)
+    frame_data = data[:msg_size]
+    data = data[msg_size:]
+    # Extract frame
+    frame = pickle.loads(frame_data)
+    return frame
+
 
 def gen(camera):
     global my_list
