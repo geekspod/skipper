@@ -56,10 +56,9 @@ def video_socket():
 
 
 def gen(camera):
-    global my_list
-    object = ObjectTracker()
+    global my_list, object
     while True:
-        success, image = video.read()
+        image = video_socket()
         output = object.track(image)
         my_list = output['tracks']
         send_list(my_list)
