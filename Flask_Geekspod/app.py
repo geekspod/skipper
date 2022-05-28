@@ -5,11 +5,20 @@ import sys
 
 import cv2
 from flask import Flask, render_template
-from flask import Response,jsonify
-import socket
-import numpy as np
-import sys
-from PIL import Image
+from flask import Response
+
+HOST = ''
+PORT = 8089
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+print('Socket created')
+s.bind((HOST, PORT))
+print('Socket bind complete')
+s.listen(10)
+print('Socket now listening')
+conn, addr = s.accept()
+data = b''  ### CHANGED
+payload_size = struct.calcsize("L")  ### CHANGED
+
 sys.path.insert(0, 'D:\yolov4-deepsort')
 from tracker import ObjectTracker
 from flask_socketio import send, emit, SocketIO
