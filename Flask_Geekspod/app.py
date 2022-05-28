@@ -2,10 +2,13 @@ import pickle
 import socket
 import struct
 import sys
-
 import cv2
+
 from flask import Flask, render_template
 from flask import Response
+from tracker import ObjectTracker
+from flask_socketio import emit, SocketIO
+
 
 HOST = ''
 PORT = 8089
@@ -20,8 +23,7 @@ data = b''  ### CHANGED
 payload_size = struct.calcsize("L")  ### CHANGED
 
 sys.path.insert(0, 'D:\yolov4-deepsort')
-from tracker import ObjectTracker
-from flask_socketio import send, emit, SocketIO
+
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 video = cv2.VideoCapture(0)
