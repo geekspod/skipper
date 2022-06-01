@@ -1,116 +1,74 @@
 <html>
 <head>
-    <title>GeekSpod</title>
-    <link rel="stylesheet" href="index.css" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <title>VAOTQ</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.1.3/socket.io.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src='https://unpkg.com/babel-standalone@6.26.0/babel.js'></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<style>
-    #customers {
-        font-family: Arial, Helvetica, sans-serif;
-        border-collapse: collapse;
-        align-content: center;
-        margin-left: auto;
-        margin-right: auto;
-        width: 50%;
-    }
-
-    #customers td,
-    #customers th {
-        border: 1px solid #ddd;
-        padding: 8px;
-    }
-
-    #customers tr:nth-child(even) {
-        background-color: #f2f2f2;
-    }
-
-    #customers tr:hover {
-        background-color: #ddd;
-    }
-
-    #customers th {
-        padding-top: 12px;
-        padding-bottom: 12px;
-        text-align: left;
-        background-color: #04aa6d;
-        color: white;
-    }
-</style>
 <body>
-    <div id="app">
-        <h1 style="text-align: center;">GeeksPod</h1>
-        <br />
-        <img style="display: block; margin-left: auto; margin-right: auto; width: 45%; height: 45%;" src="{{ url_for('video_feed') }}" />
-        <br />
-        <br />
-        <br />
-        <div id="tracks">
-            <table id="customers">
-                <tr>
-                    <th>Sr#</th>
-                    <th>Tracking IDs</th>
-                    <th>Action</th>
-                </tr>
-                <template v-for="(track, index) in list">
-                    <tr>
-                        <td>{{ track }}</td>
-                        <td>{{ track }}</td>
-                        <td>
-                            <button @click="deleteTrack(track.tracking_id)">Delete</button>
-                        </td>
-                    </tr>
-                </template>
-            </table>
-        </div>
-        <br />
+<img style="display: block; margin-left: auto; margin-right: auto; width: 45%; height: 45%;" src="{{ url_for('video_feed') }}" />
+    <div id="root">
+        <script type="text/babel">
+                var socket = io.connect("http://localhost:5000/");
+                function send_message(id) {
+                    socket.emit('track_id', id);
+                }
+                const TrackTable = () => {
+                    const [tracks, setTracks] = React.useState([]);
+                    const [track_id, setTrackId] = React.useState(0);
+                        socket.on("connect", function () {
+                            console.log("connected");
+                        });
+                        socket.on("list", function (msg) {
+                            console.log("Received message", msg);
+                            setTracks(msg);
+                            console.log(tracks);
+                        });
 
+                    return (
+                        <div >
+                            <h1>People detected</h1>
+                            <table className="min-w-full divide-y divide-gray-300">
+                                <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">SR#</th>
+                                    <th className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 lg:table-cell">Tracking ID</th>
+                                    <th className="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 sm:table-cell">Track</th>
+                                </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200 bg-white">
+                                {
+                                    tracks.map((value, key) => {
+                                        console.log("value", value);
+                                        return (
+                                            <tr key={key}>
+                                                <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-6">{key}</td>
+                                                <td className="w-full max-w-0 py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:w-auto sm:max-w-none sm:pl-6">{value}</td>
+                                                <td>
+                                                    <button
+                                                        className={(value == track_id) ? "inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500":"inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"}
+                                                        onClick={() => {
+                                                            send_message(value),
+                                                                setTrackId(value)
+                                                        }}>Track
+
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        )
+                                    })
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    )
+                }
+                ReactDOM.render(<TrackTable />, document.querySelector('#root'));
+            </script>
     </div>
 </body>
-<script>
-    function showID(id, index) {
-        className = document.getElementsByClassName(id)[0];
-
-        var generated_ids_list = [];
-        for (var i = 0; i < "{{list_count}}"; i++) {
-            if (i != index - 1) {
-                generated_ids_list.push("S" + String(i + 1));
-            }
-        }
-
-        if (className.innerText === "ENABLE TRACKING") {
-            className.innerText = "DISABLE TRACKING";
-            className.style.backgroundColor = "red";
-            for (var i = 0; i < generated_ids_list.length; i++) {
-                temp_class = document.getElementsByClassName(generated_ids_list[i])[0];
-                temp_class.disabled = true;
-                temp_class.style.backgroundColor = "gray";
-            }
-        } else {
-            className.innerText = "ENABLE TRACKING";
-            className.style.backgroundColor = "#04AA6D";
-            for (var i = 0; i < generated_ids_list.length; i++) {
-                temp_class = document.getElementsByClassName(generated_ids_list[i])[0];
-                temp_class.disabled = false;
-                temp_class.style.backgroundColor = "#04AA6D";
-            }
-        }
-    }
-    $(document).ready(function () {
-        var socket = io.connect("http://localhost:5000/");
-        socket.on("connect", function () {
-            console.log("connected");
-        });
-        socket.on("list", function (msg) {
-            console.log("Received message", msg);
-        });
-    });
-</script>
-<script>
-    new Vue({
-        el: "#app",
-        data: {list: [1,2,3,4,5,6,7,8,9,10]},
-    });
-</script>
 </html>

@@ -1,3 +1,4 @@
+import math
 import os
 
 # comment out below line to enable tensorflow logging outputs
@@ -17,6 +18,7 @@ from deep_sort import preprocessing, nn_matching
 from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
+
 
 class ObjectTracker:
     def __init__(self):
@@ -159,27 +161,17 @@ class ObjectTracker:
             middle_circle = (int(width / 2), int(height / 2))
             image = cv2.circle(frame, middle_circle, 150, (0, 255, 0), thickness=5)
             print("middle circle: ", middle_circle[0], middle_circle[1])
-            print("track: ", bbox[0], bbox[1], bbox[    2], bbox[3])
-            if bbox[0] < middle_circle[0] < bbox[2] and bbox[1] < middle_circle[1] < bbox[3] and self.isTrackerInit:
-                self.tracking_id = track.track_id
-                self.isTrackerInit = False
+            print("track: ", bbox[0], bbox[1], bbox[2], bbox[3])
             if track.track_id == self.tracking_id:
-                if bbox[2] < middle_circle[0] - 50:
-                    print("Object in left circle")
-                    cv2.putText(frame, "Object in left circle", (int(bbox[0]), int(bbox[3] + 20)),
-                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
-                    self.command = "left"
-                elif bbox[0] > middle_circle[0] + 50:
-                    print("Object in right circle")
-                    cv2.putText(frame, "Object in right circle", (int(bbox[0]), int(bbox[3] + 20)),
-                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
-                    self.command = "right"
-                elif middle_circle[0] - 50 < bbox[0] < middle_circle[0] + 50:
-                    print("In Middle circle", track.track_id)
-                    print("Object in middle circle")
-                    cv2.putText(frame, "Object in middle circle", (int(bbox[0]), int(bbox[3] + 20)),
-                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
-                    self.command = "middle"
+                track_center = (int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2))
+                angle = math.atan2(middle_circle[1] - track_center[1], middle_circle[0] - track_center[0])
+                distance = math.sqrt(
+                    (middle_circle[1] - track_center[1]) ** 2 + (middle_circle[0] - track_center[0]) ** 2)
+                self.command = {'angle': angle, 'distance': distance}
+                cv2.putText(frame, "Angle: {0}, Distance: {1}".format(self.command['angle'], self.command['distance']),
+                            (int(bbox[0]), int(bbox[3] + 20)),
+                            cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
+
         # calculate frames per second of running detections
         fps = 1.0 / (time.time() - start_time)
         print("FPS: %.2f" % fps)
@@ -187,9 +179,9 @@ class ObjectTracker:
         self.out = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         temp = []
         for track in self.tracker.tracks:
-             temp.append(track.track_id)
+            temp.append(track.track_id)
 
-        return {'output': self.out, 'command': self.command,"tracks":temp}
+        return {'output': self.out, 'command': self.command, "tracks": temp}
 
 
 if __name__ == '__main__':

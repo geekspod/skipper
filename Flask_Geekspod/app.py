@@ -6,7 +6,6 @@ import cv2
 
 from flask import Flask, render_template
 from flask import Response
-from tracker import ObjectTracker
 from flask_socketio import emit, SocketIO
 
 
@@ -28,6 +27,7 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 video = cv2.VideoCapture(0)
 old_list = []
+from tracker import ObjectTracker
 object = ObjectTracker()
 
 
