@@ -167,6 +167,8 @@ class ObjectTracker:
                 angle = math.atan2(middle_circle[1] - track_center[1], middle_circle[0] - track_center[0])
                 distance = math.sqrt(
                     (middle_circle[1] - track_center[1]) ** 2 + (middle_circle[0] - track_center[0]) ** 2)
+                # draw a line from the center of the frame to the center of the object
+                cv2.line(frame, middle_circle, track_center, (0, 0, 255), 2)
                 self.command = {'angle': angle, 'distance': distance}
                 cv2.putText(frame, "Angle: {0}, Distance: {1}".format(self.command['angle'], self.command['distance']),
                             (int(bbox[0]), int(bbox[3] + 20)),
