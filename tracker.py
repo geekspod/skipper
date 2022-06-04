@@ -159,7 +159,7 @@ class ObjectTracker:
 
             height, width, colorChannel = frame.shape
             middle_circle = (int(width / 2), int(height / 2))
-            image = cv2.circle(frame, middle_circle, 150, (0, 255, 0), thickness=5)
+            image = cv2.circle(frame, middle_circle, 50, (0, 255, 0), thickness=1)
             print("middle circle: ", middle_circle[0], middle_circle[1])
             print("track: ", bbox[0], bbox[1], bbox[2], bbox[3])
             if track.track_id == self.tracking_id:
