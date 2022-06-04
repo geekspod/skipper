@@ -165,6 +165,9 @@ class ObjectTracker:
             if track.track_id == self.tracking_id:
                 track_center = (int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2))
                 angle = math.atan2(middle_circle[1] - track_center[1], middle_circle[0] - track_center[0])
+                angle = angle * (180 / math.pi)
+                if angle < 0:
+                    angle = angle + 360
                 distance = math.sqrt(
                     (middle_circle[1] - track_center[1]) ** 2 + (middle_circle[0] - track_center[0]) ** 2)
                 # draw a line from the center of the frame to the center of the object
