@@ -172,7 +172,7 @@ class ObjectTracker:
                 self.command = {'angle': angle, 'distance': distance}
                 cv2.putText(frame, "Angle: {0}, Distance: {1}".format(self.command['angle'], self.command['distance']),
                             (int(bbox[0]), int(bbox[3] + 20)),
-                            cv2.FONT_HERSHEY_COMPLEX_SMALL, 1, (0, 255, 0), 2)
+                            cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.5, (0, 255, 0), 1)
 
         # calculate frames per second of running detections
         fps = 1.0 / (time.time() - start_time)
