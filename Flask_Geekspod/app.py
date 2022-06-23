@@ -1,3 +1,4 @@
+import json
 import pickle
 import socket
 import struct
@@ -7,7 +8,6 @@ import cv2
 from flask import Flask, render_template
 from flask import Response
 from flask_socketio import emit, SocketIO
-
 
 HOST = ''
 PORT = 8089
@@ -28,6 +28,7 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 video = cv2.VideoCapture(0)
 old_list = []
 from tracker import ObjectTracker
+
 object = ObjectTracker()
 
 
@@ -54,6 +55,10 @@ def video_socket():
     return frame
 
 
+def send_to_client(command):
+    conn.send(json.dumps(command).encode())
+
+
 def gen(camera):
     global my_list, object
     while True:
@@ -61,6 +66,7 @@ def gen(camera):
         output = object.track(image)
         my_list = output['tracks']
         send_list(my_list)
+        send_to_client(output['command'])
         ret, jpeg = cv2.imencode('.jpg', output["output"])
         outputImage = jpeg.tobytes()
         yield (b'--frame\r\n'
@@ -91,3 +97,14 @@ def recv_list(track_id):
     global object
     object.tracking_id = track_id
 
+
+@socketio.on('command')
+def synthesizeVoiceCommand(command):
+    print("Command received {0}".format(command))
+
+    if command in ["arm", "start", "fly"]:
+        send_to_client('arm')
+    elif command in ['disarm', 'stop', 'end']:
+        send_to_client('disarm')
+    else:
+        print("Invalid command detected")
