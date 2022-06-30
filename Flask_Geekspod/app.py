@@ -100,11 +100,12 @@ def recv_list(track_id):
 
 @socketio.on('command')
 def synthesizeVoiceCommand(command):
-    print("Command received {0}".format(command))
+    cmd = command.strip().lower().replace('.', '')
+    print("Command received {0}".format(cmd))
 
-    if command in ["arm", "start", "fly"]:
-        send_to_client('arm')
-    elif command in ['disarm', 'stop', 'end']:
-        send_to_client('disarm')
+    if cmd in ["arm", "start", "fly"]:
+        send_to_client({'command': 'arm'})
+    elif cmd in ['disarm', 'stop', 'end']:
+        send_to_client({'command': 'disarm'})
     else:
         print("Invalid command detected")
