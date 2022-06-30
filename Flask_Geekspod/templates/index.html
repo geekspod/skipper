@@ -31,6 +31,14 @@
 
                     return (
                         <div >
+                            <button
+                                className={"inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"}
+                                onClick={() => {
+                                    recognition.start()
+                                }}>Speak
+
+                            </button>
+
                             <h1>People detected</h1>
                             <table className="min-w-full divide-y divide-gray-300">
                                 <thead className="bg-gray-50">
@@ -68,7 +76,40 @@
                     )
                 }
                 ReactDOM.render(<TrackTable />, document.querySelector('#root'));
-            </script>
+
+                const speechRecognition = window.webkitSpeechRecognition;
+
+                var recognition = new speechRecognition();
+
+                recognition.continuous = true
+
+                recognition.onstart = function() {
+
+                    console.log("Voice Recognition is on")
+
+                }
+
+                recognition.onspeechend = function() {
+
+                    console.log("No Activity")
+
+                }
+
+                recognition.onerror = function() {
+
+                    console.error("Try Again")
+
+                }
+
+                recognition.onresult = function(event) {
+                    const current = event.resultIndex;
+                    const transcript = event.results[current][0].transcript;
+                    socket.emit('command', transcript);
+                    recognition.stop()
+                }
+
+
+        </script>
     </div>
 </body>
 </html>
