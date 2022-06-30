@@ -56,7 +56,6 @@ class ObjectTracker:
         self.trackerList = []
 
     def track(self, frame):
-        print("tracking")
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = Image.fromarray(frame)
         frame_size = frame.shape[:2]
@@ -160,8 +159,6 @@ class ObjectTracker:
             height, width, colorChannel = frame.shape
             middle_circle = (int(width / 2), int(height / 2))
             image = cv2.circle(frame, middle_circle, 50, (0, 255, 0), thickness=1)
-            print("middle circle: ", middle_circle[0], middle_circle[1])
-            print("track: ", bbox[0], bbox[1], bbox[2], bbox[3])
             if track.track_id == self.tracking_id:
                 track_center = (int((bbox[0] + bbox[2]) / 2), int((bbox[1] + bbox[3]) / 2))
                 angle = math.atan2(middle_circle[1] - track_center[1], middle_circle[0] - track_center[0])
@@ -179,14 +176,13 @@ class ObjectTracker:
 
         # calculate frames per second of running detections
         fps = 1.0 / (time.time() - start_time)
-        print("FPS: %.2f" % fps)
         result = np.asarray(frame)
         self.out = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         temp = []
         for track in self.tracker.tracks:
             temp.append(track.track_id)
 
-        return {'output': self.out, 'command': self.command, "tracks": temp}
+        return {'output': self.out, 'command': self.command, "tracks": temp, "fps": fps}
 
 
 if __name__ == '__main__':
